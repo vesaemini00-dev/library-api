@@ -47,17 +47,14 @@ python3 scripts/seed.py
 
 uvicorn app.main:app --reload
 
-The API will be available at: http://127.0.0.1:8000
-
-API docs (Swagger UI): http://127.0.0.1:8000/docs
+API available at: http://127.0.0.1:8000
+Interactive docs: http://127.0.0.1:8000/docs
 
 ---
 
 ## Run with Docker
 
 docker compose up
-
-This will automatically apply migrations, seed the database, and start the server at http://localhost:8000.
 
 ---
 
@@ -69,7 +66,7 @@ PYTHONPATH=. pytest tests/ -v
 
 ## API Key
 
-All POST, PATCH, and DELETE endpoints require an API key header:
+All POST, PATCH, and DELETE endpoints require this header:
 
 X-API-Key: mysecretapikey123
 
@@ -89,3 +86,13 @@ X-API-Key: mysecretapikey123
 - GET /api/v1/loans — list loans with filters
 - GET /api/v1/reports/top-borrowers — top borrowing members
 - GET /api/v1/reports/overdue-loans — all overdue loans
+
+---
+
+## Notes
+lighthouse
+
+## Limitations
+- SQLite is used for development — switch DATABASE_URL to PostgreSQL for production
+- No rate limiting on endpoints
+- API key auth is simple - a production system would use JWT tokens
