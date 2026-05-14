@@ -96,7 +96,7 @@ def seed():
     boutliers.authors = [gladwell]
     btipping.authors = [gladwell]
     bbrave.authors = [huxley]
-    bfoundation.authors = [asimov]
+    bfoundation.authors = [asimov, sagan]  # multiple authors
     birobot.authors = [asimov]
     borigins.authors = [arendt]
     bthinking.authors = [sagan, arendt]  # multiple authors
