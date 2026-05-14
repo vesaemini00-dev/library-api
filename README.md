@@ -1,4 +1,3 @@
-cat > README.md << 'ENDOFFILE'
 # Library API
 
 A RESTful backend API for a small library lending system, built with FastAPI and SQLAlchemy. The API allows librarians to manage books, authors, categories, and members, and to track book loans.
