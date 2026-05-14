@@ -113,6 +113,8 @@ X-API-Key: mysecretapikey123
 ## Notes
 lighthouse
 
+This project was built as part of the Giga Academy Batch 5 Full Stack assessment. The API is fully functional and documented at /docs.
+
 ## Limitations
 - SQLite is used for development — switch DATABASE_URL to PostgreSQL for production
 - No rate limiting on endpoints

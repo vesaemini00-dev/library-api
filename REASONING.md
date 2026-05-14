@@ -34,4 +34,14 @@ Nothing was cut.
 - SQLAlchemy documentation: https://docs.sqlalchemy.org
 - Alembic documentation: https://alembic.sqlalchemy.org
 - Giga Academy Batch 5 course material
-- Claude AI (Anthropic) — used throughout the project to understand concepts, unblock syntax issues, and get explanations of how things work
+- Claude AI (Anthropic) — used with the following prompts:
+  - "what is an ORM and why do we use it instead of raw SQL"
+  - "how do I set up Alembic migrations with SQLAlchemy"
+  - "what is the N+1 problem and how do I avoid it"
+  - "how does joinedload work and when should I use it"
+  - "how do I create a many to many relationship in SQLAlchemy"
+  - "why does PATCH use exclude_unset=True"
+  - "how do I protect FastAPI endpoints with an API key header"
+  - "what is the difference between 400 and 409 HTTP status codes"
+  - "how do I write pytest fixtures and what is conftest.py"
+  - "how do I use subqueries in SQLAlchemy to count related records"
