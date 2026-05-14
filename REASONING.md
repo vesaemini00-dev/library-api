@@ -1,53 +1,37 @@
 # Reasoning & Design Decisions
 
-## Notes
-lighthouse
+## Why I chose SQLite
+I went with SQLite for this project because it was the simplest option for development. It doesn't need a separate server running, it just saves everything into a file called library.db. Since the assessment didn't require a production deployment, SQLite made sense. If I were to take this to production I would switch to PostgreSQL by just updating the DATABASE_URL environment variable.
 
-## Project Overview
-A RESTful library lending API built with FastAPI, SQLAlchemy, and Alembic. The API manages books, authors, categories, members, and loans.
+## Why I modelled the M:N relationship the way I did
+A book can have multiple authors and an author can have multiple books. This is a many to many relationship. I created a separate table called book_authors that holds two columns — book_id and author_id — together forming the primary key. This is the standard way to handle M:N in relational databases. In SQLAlchemy I used the secondary parameter in the relationship() call so I can just write book.authors and get the list of authors back without manually writing JOIN queries every time.
 
-## Endpoints
-See README.md for the full list of endpoints, or visit /docs for the interactive Swagger UI.
+## How I avoided N+1 queries in the search endpoint
+The N+1 problem happens when you fetch a list of items and then make a separate database query for each item to get its related data. In my case, if I fetched 20 books and then loaded each book's authors separately, that would be 21 queries total. I avoided this by using joinedload() from SQLAlchemy, which tells the ORM to fetch the books and their authors together in one JOIN query. This means no matter how many books are returned, it's always one query.
 
----
+## Why DELETE on a member with active loans returns 409
+If a member still has books out and we delete them, the loan records in the database would be left pointing to a member that no longer exists. This breaks the data. A 409 Conflict is the correct HTTP status here because the request itself is valid — we just can't complete it in the current state. The caller needs to make sure all books are returned first before the member can be deleted.
 
-## Design Decisions
+## How I structured my test suite
+I used pytest with a separate test database so tests never touch the real data. I set up a conftest.py file with shared fixtures — a test client, a database session, sample data, and an API key header — so I don't repeat setup code in every test. I focused on testing the loan endpoints because they have the most business logic (checking if a member is active, checking available copies, handling returns). I also tested the search endpoint to make sure filters and pagination work correctly. I skipped testing basic CRUD endpoints individually because the pattern is the same across all resources and the loan tests already cover the core behaviours.
 
-### Why SQLite?
-SQLite was chosen for development because it requires zero configuration — it's just a file on disk. This makes it easy to clone and run the project without setting up a separate database server. The app can be switched to PostgreSQL by changing the DATABASE_URL environment variable.
+## Scope choices
+Everything required in the brief was completed:
+- All CRUD endpoints for books, members, authors, and categories
+- Loan endpoints with all the required business logic
+- Book search with filters, sorting, and pagination
+- Reports (top borrowers and overdue loans)
+- API key authentication on all write endpoints
+- Alembic migrations
+- Seed script with 20 books, 10 authors, 10 members, and 31 loans
+- pytest tests
+- Docker setup
 
-### How I modelled the M:N relationship (books and authors)
-A book can have multiple authors, and an author can have multiple books. This is a many-to-many relationship. I implemented it using an association table called `book_authors` with two columns: `book_id` and `author_id`, forming a composite primary key. SQLAlchemy handles this with the `secondary` parameter in the `relationship()` call, so you can do `book.authors` and get a list of author objects directly.
+Nothing was cut.
 
-### How I avoided N+1 queries in the search endpoint
-Without eager loading, fetching 20 books would trigger 20 additional queries to load each book's authors — one per book. This is called the N+1 problem. I solved it using SQLAlchemy's `joinedload()`, which tells the ORM to fetch books and their authors in a single JOIN query. This means the search endpoint always uses one query for items regardless of how many results are returned.
-
-### Why DELETE on a member with active loans returns 409
-A 409 Conflict means the request is valid but cannot be completed because of the current state of the resource. Deleting a member who still has books out would leave orphaned loan records in the database — loans with no member attached. This would corrupt the data. Returning 409 tells the caller they need to resolve the conflict first (return the books) before the delete can proceed.
-
-### How I structured the test suite
-I used pytest with a separate in-memory SQLite test database so tests never touch production data. A `conftest.py` file sets up fixtures shared across all tests: a test client, a database session, sample data, and an API key header. I focused tests on the loan endpoints (the core business logic) and the search endpoint (filters, pagination shape). I skipped testing every CRUD endpoint individually as the pattern is repetitive and the loan/search tests cover the most meaningful behaviour.
-
-### How authentication works
-All POST, PATCH, and DELETE endpoints are protected with a simple API key check. FastAPI reads the `X-API-Key` header from the request and compares it against the `API_KEY` environment variable. If the key is missing or wrong, a 401 Unauthorized is returned. GET endpoints are open because they only read data.
-
----
-
-## Scope Choices
-- All required endpoints implemented
-- Seed data meets minimum requirements (20 books, 10 authors, 10 members, 31 loans)
-- Docker and Alembic migrations included
-- Tests cover loan flow and search endpoint
-
-## Limitations & Known Issues
-- SQLite does not support all PostgreSQL features; date arithmetic in the overdue report uses Python instead of pure SQL for compatibility
-- No rate limiting on endpoints
-- API key authentication is simple; a production system would use JWT tokens
-
----
-
-## External Resources Used
+## External resources used
 - FastAPI documentation: https://fastapi.tiangolo.com
 - SQLAlchemy documentation: https://docs.sqlalchemy.org
 - Alembic documentation: https://alembic.sqlalchemy.org
-- Claude AI (Anthropic) — used to unblock syntax questions and understand concepts during development
+- Giga Academy Batch 5 course material
+- Claude AI (Anthropic) — used throughout the project to understand concepts, unblock syntax issues, and get explanations of how things work
