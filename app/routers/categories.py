@@ -8,8 +8,13 @@ router = APIRouter()
 
 
 @router.get("/categories", response_model=list[schemas.CategoryOut])
-def list_categories(db: Session = Depends(get_db)):
-    return db.query(models.Category).all()
+def list_categories(
+    page: int = 1,
+    page_size: int = 20,
+    db: Session = Depends(get_db)
+):
+    offset = (page - 1) * page_size
+    return db.query(models.Category).offset(offset).limit(page_size).all()
 
 
 @router.get("/categories/{id}", response_model=schemas.CategoryOut)
